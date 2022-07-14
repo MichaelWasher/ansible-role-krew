@@ -1,0 +1,22 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: podman
+platforms:
+  - name: fedora36
+    image: docker.io/geerlingguy/docker-fedora36-ansible
+    pre_build_image: true
+  - name: ubuntu1804
+    image: docker.io/geerlingguy/docker-ubuntu1804-ansible
+    pre_build_image: true
+  - name: ubuntu2204
+    image: docker.io/geerlingguy/docker-ubuntu2204-ansible
+    pre_build_image: true
+  - name: debian11
+    image: docker.io/geerlingguy/docker-debian11-ansible
+    pre_build_image: true
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

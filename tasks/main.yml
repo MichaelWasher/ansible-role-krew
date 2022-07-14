@@ -1,0 +1,88 @@
+---
+- name: Check `kubectl-krew` is present
+  changed_when: false
+  ignore_errors: true
+  stat:
+    path: "{{ krew_bin_path }}"
+  register: file_data
+
+- name: Install kubectl-krew if not present
+  when: file_data.stat.exists != true
+  block:
+  
+  - name: Set CPU Architecture 
+    block:
+    - set_fact:
+        arch: amd64
+      when: ansible_architecture == "x86_64"
+
+    - set_fact:
+        arch: arm
+      when: ansible_architecture == "arm"
+
+  - name: Install Krew
+    tempfile:
+      state: directory
+    register: tempdir
+
+  - set_fact:
+      tempdir_path: "{{ tempdir.path }}"
+
+  - name: Download Krew Latest
+    get_url:
+      url: "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew-{{ ansible_system|lower }}_{{ arch }}.tar.gz"
+      dest: "{{ tempdir_path }}/krew.tar.gz"
+    when: krew_version == "latest"
+
+  - name: Fetch krew {{ krew_version }}
+    get_url:
+      url: "https://github.com/kubernetes-sigs/krew/releases/download/{{ krew_version }}/krew-{{ ansible_system|lower }}_{{ arch }}.tar.gz"
+      dest: "{{ tempdir_path }}/krew.tar.gz"
+    when: krew_version != "latest"
+
+  - file:
+      path: "{{ tempdir_path }}/krew"
+      state: directory
+
+  - unarchive:
+      src: "{{ tempdir_path }}/krew.tar.gz"
+      dest: "{{ tempdir_path }}/krew"
+      remote_src: true
+
+  - name: Copy krew plugin to /usr/local/bin
+    copy:
+      src: "{{ tempdir_path }}/krew/krew-{{ ansible_system|lower }}_{{ arch }}"
+      dest: "{{ krew_bin_path }}"
+      mode: 0755
+      remote_src: true
+
+- name: Check `kubectl-krew` is present
+  changed_when: false
+  ignore_errors: true
+  stat:
+    path: "{{ krew_bin_path }}"
+  register: file_data
+
+- name: Manage Krew Plugins
+  when: krew_plugins is defined and file_data.stat.exists == true
+  block:
+  - name: Update Krew Index
+    shell: "{{ krew_bin_path }} update"
+    changed_when: false
+    
+  - name: Get List of Krew Plugins
+    shell: "kubectl-krew list"
+    register: krew_installed_plugins
+    changed_when: false
+  
+  - name: Uninstall Removed Krew plugins
+    shell: "kubectl-krew uninstall {{ plugin }}"
+    loop: "{{ krew_installed_plugins.stdout_lines | difference(krew_plugins) }}"
+    vars:
+      plugin: "{{ item.split(' ')[0] | lower }}"
+
+  - name: Install New Krew plugins
+    shell: "kubectl-krew install {{ plugin }}"
+    loop: "{{ krew_plugins | difference(krew_installed_plugins.stdout_lines) }}"
+    vars:
+      plugin: "{{ item.split(' ')[0] | lower }}"

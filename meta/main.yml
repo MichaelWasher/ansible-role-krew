@@ -1,0 +1,31 @@
+galaxy_info:
+  author: Michael Washer
+  namespace: michaelwasher
+  role_name: krew
+  description: Ansible Role for installing the Kubectl Krew tool and managing Kubernetes packages
+  company: michael-washer.dev
+  license: Apache-2.0
+  min_ansible_version: "2.6"
+
+  platforms:
+  - name: EL
+    versions:
+      - 7
+      - 8
+  - name: Debian
+    versions:
+      - stretch
+      - buster
+  - name: Ubuntu
+    versions:
+      - xenial
+      - bionic
+
+  galaxy_tags: 
+  - kubernetes
+  - openshift
+  - k8s
+  - k3s
+  - krew
+
+dependencies: []
