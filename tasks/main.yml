@@ -86,18 +86,18 @@
     failed_when: false
 
   - name: Get List of Krew Plugins
-    shell: "kubectl-krew list"
+    shell: "{{ krew_bin_path }} list"
     register: krew_installed_plugins
     changed_when: false
   
   - name: Uninstall Removed Krew plugins
-    shell: "kubectl-krew uninstall {{ plugin }}"
+    shell: "{{ krew_bin_path }} uninstall {{ plugin }}"
     loop: "{{ krew_installed_plugins.stdout_lines | difference(krew_plugins) }}"
     vars:
       plugin: "{{ item.split(' ')[0] | lower }}"
 
   - name: Install New Krew plugins
-    shell: "kubectl-krew install {{ plugin }}"
+    shell: "{{ krew_bin_path }} install {{ plugin }}"
     loop: "{{ krew_plugins | difference(krew_installed_plugins.stdout_lines) }}"
     vars:
       plugin: "{{ item.split(' ')[0] | lower }}"
