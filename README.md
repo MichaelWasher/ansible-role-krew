@@ -13,12 +13,14 @@ Role Variables
 
 Role Variables:
 - krew_bin_path: "optional string:"
+- krew_user: "string: name of user to have plugins installed"
 - krew_version: "string: version of krew to install. 'latest' can be used to choose the current version"
 - krew_plugins: "list: all krew plugins to install"
-  
+
 Examples:
 ```yaml
 krew_bin_path: "/usr/local/bin/kubectl-krew"
+krew_user: mwasher
 krew_version: latest
 krew_plugins: 
   - "strace"
@@ -41,6 +43,7 @@ Example Playbook
   - include_role:
       name: michaelwasher.krew
     vars:
+      krew_user: mwasher
       krew_version: "v0.4.2"
       krew_plugins: 
       - "strace"

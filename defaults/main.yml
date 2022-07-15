@@ -1,5 +1,6 @@
 ---
 krew_bin_path: "/usr/local/bin/kubectl-krew"
 krew_version: latest
+krew_user: "mwasher"
 krew_plugins: 
   - "strace"

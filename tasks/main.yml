@@ -57,6 +57,8 @@
       remote_src: true
 
 - name: Check `kubectl-krew` is present
+  become: true
+  become_user: '{{ krew_user }}'
   changed_when: false
   ignore_errors: true
   stat:
@@ -64,12 +66,25 @@
   register: file_data
 
 - name: Manage Krew Plugins
+  become: true
+  become_user: '{{ krew_user }}'
   when: krew_plugins is defined and file_data.stat.exists == true
   block:
   - name: Update Krew Index
     shell: "{{ krew_bin_path }} update"
     changed_when: false
     
+  - name: Ensure Krew Plugin Path is located in $PATH
+    lineinfile:
+      path: "~/.zshrc"
+      line: "export PATH=${PATH}:$HOME/.krew/bin"
+    failed_when: false
+
+  - lineinfile:
+      path: "~/.bashrc"
+      line: "export PATH=${PATH}:$HOME/.krew/bin"
+    failed_when: false
+
   - name: Get List of Krew Plugins
     shell: "kubectl-krew list"
     register: krew_installed_plugins
