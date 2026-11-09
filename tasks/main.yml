@@ -85,6 +85,16 @@
       line: "export PATH=${PATH}:$HOME/.krew/bin"
     failed_when: false
 
+  - name: Register custom Krew indexes
+    shell: "{{ krew_bin_path }} index add {{ item.name }} {{ item.url }}"
+    loop: "{{ krew_indexes | default([]) }}"
+    register: index_add_result
+    failed_when:
+      - index_add_result.rc != 0
+      - "'already exists' not in index_add_result.stderr"
+    changed_when: "'already exists' not in index_add_result.stderr"
+    when: krew_indexes is defined and krew_indexes | length > 0
+
   - name: Get List of Krew Plugins
     shell: "kubectl-krew list"
     register: krew_installed_plugins
